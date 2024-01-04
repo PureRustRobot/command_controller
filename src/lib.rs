@@ -7,6 +7,7 @@ use zenoh::{
 use serde_json;
 use zenoh_interface::{CmdVel, dual_shock_4::Axis};
 use zenoh_manage_utils::param::get_str_param;
+use zenoh_manage_utils::logger;
 
 pub async fn wheel_controller(yaml_path:&str)->Result<(), Error>
 {
@@ -17,6 +18,8 @@ pub async fn wheel_controller(yaml_path:&str)->Result<(), Error>
 
     let subscriber = session.declare_subscriber(&sub_topic).res().await.unwrap();
     let publisher = session.declare_publisher(&pub_topic).res().await.unwrap();
+
+    logger::log_info("wheel_controller", "Start".to_string());
 
     loop
     {

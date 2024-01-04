@@ -1,0 +1,4 @@
+zenoh_params:
+  wheel_controller:
+    sub_topic: "joy"
+    pub_topic: "wheel/cmd_vel"
