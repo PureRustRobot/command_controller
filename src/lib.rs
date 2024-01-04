@@ -9,17 +9,18 @@ use zenoh_interface::{CmdVel, dual_shock_4::Axis};
 use zenoh_manage_utils::param::get_str_param;
 use zenoh_manage_utils::logger;
 
-pub async fn wheel_controller(yaml_path:&str)->Result<(), Error>
+pub async fn wheel_controller(node_name:&str, yaml_path:&str)->Result<(), Error>
 {
     let session = zenoh::open(Config::default()).res().await.unwrap();
 
-    let sub_topic = get_str_param(yaml_path, "wheel_controller", "sub_topic", "joy".to_string());
-    let pub_topic = get_str_param(yaml_path, "wheel_controller", "pub_topic", "wheel/cmd_vel".to_string());
+    let sub_topic = get_str_param(yaml_path, node_name, "sub_topic", "joy".to_string());
+    let pub_topic = get_str_param(yaml_path, node_name, "pub_topic", "wheel/cmd_vel".to_string());
 
     let subscriber = session.declare_subscriber(&sub_topic).res().await.unwrap();
     let publisher = session.declare_publisher(&pub_topic).res().await.unwrap();
 
-    logger::log_info("wheel_controller", "Start".to_string());
+    let msg = format!("Start sub:{}, pub:{}", subscriber.key_expr().to_string(), publisher.key_expr().to_string());
+    logger::log_info(node_name, msg);
 
     loop
     {
