@@ -16,8 +16,8 @@ pub async fn joy_to_cmd_vel(
 {
     let session = zenoh::open(Config::default()).res().await.unwrap();
 
-    let subscriber = session.declare_subscriber(sub_topic).res().await.unwrap();
-    let publisher = session.declare_publisher(pub_topic).res().await.unwrap();
+    let subscriber = session.declare_subscriber(&sub_topic).res().await.unwrap();
+    let publisher = session.declare_publisher(&pub_topic).res().await.unwrap();
 
     let msg = format!("Start sub:{}, pub:{}", subscriber.key_expr().to_string(), publisher.key_expr().to_string());
     logger::log_info(node_name, msg);
@@ -42,7 +42,7 @@ pub async fn joy_to_cmd_vel(
     }
 }
 
-pub async fn button_to_single_motor(
+pub fn button_to_single_motor(
     node_name:&str,
     sub_topic:&str,
     pub_topic:&str,
@@ -67,17 +67,17 @@ pub async fn button_to_single_motor(
             power:0.0
         };
 
-        if name_to_button(positive_name, get_data) == 1.0
+        if name_to_button(positive_name, &get_data) == 1.0
         {
             send_data.power = 1.0;
         }
-        else if name_to_button(negative_name, get_data) == 1.0{
+        else if name_to_button(negative_name, &get_data) == 1.0{
             send_data.power = -1.0;
         }
     }
 }
 
-fn name_to_button(name:&str, btns:Buttons)->f32
+fn name_to_button(name:&str, btns:&Buttons)->f32
 {
     match name {
         "circle"=>btns.circle,
