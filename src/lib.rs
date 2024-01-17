@@ -16,8 +16,8 @@ pub async fn joy_to_cmd_vel(
 {
     let session = zenoh::open(Config::default()).res().await.unwrap();
 
-    let subscriber = session.declare_subscriber(&sub_topic).res().await.unwrap();
-    let publisher = session.declare_publisher(&pub_topic).res().await.unwrap();
+    let subscriber = session.declare_subscriber(sub_topic).res().await.unwrap();
+    let publisher = session.declare_publisher(pub_topic).res().await.unwrap();
 
     let msg = format!("Start sub:{}, pub:{}", subscriber.key_expr().to_string(), publisher.key_expr().to_string());
     logger::log_info(node_name, msg);
