@@ -42,7 +42,7 @@ pub async fn joy_to_cmd_vel(
     }
 }
 
-pub fn button_to_single_motor(
+pub async fn button_to_single_motor(
     node_name:&str,
     sub_topic:&str,
     pub_topic:&str,
