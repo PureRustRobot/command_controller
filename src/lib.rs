@@ -51,7 +51,7 @@ pub async fn single_motor(
     pub_topic:&str,
     positive_name:&str,
     negative_name:&str,
-)
+)->Result<(), Error>
 {
     let session = zenoh::open(Config::default()).res().await.unwrap();
 
