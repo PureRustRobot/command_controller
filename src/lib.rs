@@ -4,14 +4,14 @@ use zenoh::{
     Error
 };
 
-use prr_msgs::msg::*;
-use zenoh_manage_utils::logger;
+use prr_msgs::msg::{GameCon, Motor, CmdVel};
+use prr_utils::logger;
 
-pub async fn joy_to_cmd_vel(
+pub async fn gamecon_to_cmd_vel(
     node_name:&str, 
     sub_topic:&str,
     pub_topic:&str,
-
+    enable_debug:bool
 )->Result<(), Error>
 {
     let session = zenoh::open(Config::default()).res().await.unwrap();
@@ -26,7 +26,7 @@ pub async fn joy_to_cmd_vel(
     {
         let sample = subscriber.recv_async().await.unwrap();
                 
-        let get_data = deserialize_joystick(sample.value.to_string());
+        let get_data = GameCon::deserialize(sample.value.to_string());
 
         let cmd_vel = CmdVel{
             x:get_data.left_x,
@@ -34,15 +34,18 @@ pub async fn joy_to_cmd_vel(
             rotation_power:get_data.right_x
         };
 
-        let serialized = serialize_cmdvel(&cmd_vel);
+        let serialized = CmdVel::serialize(&cmd_vel);
 
-        logger::log_info(node_name, format!("Send:{}", serialized));
+        if enable_debug
+        {
+            logger::log_info(node_name, format!("Send:{}", serialized));
+        }
 
         publisher.put(serialized).res().await.unwrap();
     }
 }
 
-pub async fn button_to_single_motor(
+pub async fn single_motor(
     node_name:&str,
     sub_topic:&str,
     pub_topic:&str,
@@ -61,23 +64,24 @@ pub async fn button_to_single_motor(
     loop {
         let sample = subscriber.recv_async().await.unwrap();
 
-        let get_data = deserialize_buttons(sample.value.to_string());
+        let get_data = GameCon::deserialize(sample.value.to_string());
 
-        let mut send_data = SingleMotor{
+        let mut send_data = Motor{
             power:0.0
         };
 
-        if name_to_button(positive_name, &get_data) == 1.0
+        if name_to_button(positive_name, &get_data)
         {
             send_data.power = 1.0;
         }
-        else if name_to_button(negative_name, &get_data) == 1.0{
+        else if name_to_button(negative_name, &get_data)
+        {
             send_data.power = -1.0;
         }
     }
 }
 
-fn name_to_button(name:&str, btns:&Buttons)->f32
+fn name_to_button(name:&str, btns:&GameCon)->bool
 {
     match name {
         "circle"=>btns.circle,
@@ -94,7 +98,7 @@ fn name_to_button(name:&str, btns:&Buttons)->f32
         "l2"=>btns.l2,
         _=>{
             logger::log_error("button_to_value", "Failed to get button value".to_string());
-            return 0.0
+            return false;
         }
     }
 }
